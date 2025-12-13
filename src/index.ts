@@ -158,10 +158,13 @@ export class AgentState {
 
       const messages = [
         { role: 'system', content: systemPrompt },
-        ...history.slice(-15)
+        ...history.slice(-15).map(h => ({ role: h.role, content: h.content }))
       ];
 
       console.log(`[DurableObject] Sending ${messages.length} messages to AI`);
+      console.log(`[DurableObject] Message roles: ${messages.map(m => m.role).join(', ')}`);
+      const totalTokens = messages.reduce((sum, m) => sum + m.content.split(' ').length, 0);
+      console.log(`[DurableObject] Estimated token count: ${totalTokens}`);
 
       try {
         console.log('[DurableObject] Calling AI API...');
@@ -170,7 +173,7 @@ export class AgentState {
         const response = await this.env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
           messages,
           temperature: 0.8,
-          max_tokens: 800,
+          max_tokens: 1000,
         });
 
         const endTime = Date.now();
@@ -190,13 +193,24 @@ export class AgentState {
 
       } catch (error: any) {
         console.error('[DurableObject] AI Error:', error);
+        console.error('[DurableObject] Error type:', error.constructor.name);
         console.error('[DurableObject] Error stack:', error.stack);
         console.error('[DurableObject] Error message:', error.message);
 
+        let errorMessage = 'Sorry, I encountered an error processing your request.';
+
+        if (error.message?.includes('5007')) {
+          errorMessage = 'AI model not available. This might be due to usage limits or model access restrictions.';
+        } else if (error.message?.includes('rate limit') || error.message?.includes('429')) {
+          errorMessage = 'Rate limit exceeded. Please wait a moment before trying again.';
+        } else if (error.message?.includes('usage') || error.message?.includes('quota')) {
+          errorMessage = 'Usage limit reached. Please check your Cloudflare Workers AI plan.';
+        }
+
         return new Response(JSON.stringify({
-          response: 'Sorry, I encountered an error processing your request.',
+          response: errorMessage,
           error: error.message
-        }), { status: 500 });
+        }), { status: 503 });
       }
     }
 
