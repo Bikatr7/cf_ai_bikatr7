@@ -1,13 +1,38 @@
-# cf_ai_bikatr7
+# AI Assistant
 
-## Placeholder, I have not actually started
+Modern conversational AI powered by Llama 3.3, built with TypeScript and Cloudflare Workers.
 
+> **Note:** This project uses [pnpm](https://pnpm.io/) as the package manager.
 
-for me:
-https://developers.cloudflare.com/agents/
-https://agents.cloudflare.com/
+## Features
 
-LLM (recommend using Llama 3.3 on Workers AI), or an external LLM of your choice
-Workflow / coordination (recommend using Workflows, Workers or Durable Objects)
-User input via chat or voice (recommend using Pages or Realtime)
-Memory or state
+- TypeScript implementation
+- dark UI with sidebar
+- Persistent conversation memory
+- Enhanced AI capabilities
+- Responsive design
+- Real-time chat experience
+
+## Setup
+
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+2. Login to Cloudflare:
+   ```bash
+   pnpm wrangler login
+   ```
+
+3. Check types (optional):
+   ```bash
+   pnpm type-check
+   ```
+
+4. Run locally:
+   ```bash
+   pnpm dev
+   ```
+
+5. Open http://localhost:8787

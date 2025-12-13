@@ -1,0 +1,26 @@
+{
+  "name": "cf-ai-bikatr7",
+  "version": "1.0.0",
+  "description": "Cloudflare AI Agent using Workers AI and Durable Objects",
+  "packageManager": "pnpm@9.15.4",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "wrangler test",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "ai",
+    "agents"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "typescript": "^5.0.0"
+  }
+}

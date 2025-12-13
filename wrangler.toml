@@ -1,0 +1,19 @@
+name = "cf-ai-bikatr7"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[ai]
+binding = "AI"
+
+[durable_objects]
+bindings = [
+  { name = "AGENT_STATE", class_name = "AgentState" }
+]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["AgentState"]
