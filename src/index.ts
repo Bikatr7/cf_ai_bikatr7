@@ -12,6 +12,7 @@ interface ChatMessage {
 
 interface ChatRequest {
   message: string;
+  replaceHistory?: { role: 'user' | 'assistant'; content: string }[];
 }
 
 interface ClearRequest {
@@ -45,9 +46,12 @@ export default {
 
     if (url.pathname === '/chat' && request.method === 'POST') {
       console.log('[Worker] Chat request received');
-      const { message } = await request.json<ChatRequest>();
+      const { message, replaceHistory } = await request.json<ChatRequest>();
       const conversationId = url.searchParams.get('conversation') || 'default';
       console.log(`[Worker] Conversation ID: ${conversationId}`);
+      if (replaceHistory) {
+        console.log(`[Worker] replaceHistory provided with ${replaceHistory.length} messages`);
+      }
 
       const id = env.AGENT_STATE.idFromName(conversationId);
       const stub = env.AGENT_STATE.get(id);
@@ -58,7 +62,7 @@ export default {
       const response = await stub.fetch('http://internal/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, replaceHistory }),
       });
 
       const endTime = Date.now();
@@ -146,11 +150,18 @@ export class AgentState {
 
     if (request.method === 'POST' && url.pathname === '/chat') {
       console.log('[DurableObject] Processing chat request');
-      const { message } = await request.json<ChatRequest>();
+      const { message, replaceHistory } = await request.json<ChatRequest>();
       console.log(`[DurableObject] User message: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`);
 
-      let history: ChatMessage[] = (await this.state.storage.get('conversationHistory')) || [];
-      console.log(`[DurableObject] Current history length: ${history.length}`);
+      let history: ChatMessage[];
+
+      if (replaceHistory) {
+        console.log(`[DurableObject] Replacing history with ${replaceHistory.length} messages`);
+        history = replaceHistory.map(m => ({ role: m.role, content: m.content, timestamp: Date.now() }));
+      } else {
+        history = (await this.state.storage.get('conversationHistory')) || [];
+        console.log(`[DurableObject] Current history length: ${history.length}`);
+      }
 
       history.push({ role: 'user', content: message, timestamp: Date.now() });
 
